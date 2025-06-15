@@ -1,7 +1,7 @@
 "use client";
 
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import maplibregl from 'maplibre-gl';
 import { useMapState } from './hooks/useMapState';
 import { useMapOperations } from './hooks/useMapOperations';
@@ -9,7 +9,7 @@ import { LayerPanel } from './components/LayerPanel';
 import { FeaturePanel } from './components/FeaturePanel';
 import { styles } from './config/styles';
 
-export default function MapsPage() {
+function MapsContent() {
   const mapState = useMapState(styles);
   const {
     selectedStyleIndex,
@@ -231,5 +231,44 @@ export default function MapsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function MapsPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        padding: '2rem',
+        backgroundColor: '#f8f9fa',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: '#6c757d'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>
+            地図を読み込み中...
+          </div>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #e9ecef',
+            borderTop: '4px solid #007bff',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }} />
+          <style jsx>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    }>
+      <MapsContent />
+    </Suspense>
   );
 }
