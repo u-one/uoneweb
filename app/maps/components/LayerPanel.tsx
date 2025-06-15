@@ -8,6 +8,7 @@ interface LayerPanelProps {
   onToggleLayerExpansion: (layerId: string) => void;
   onToggleAllExpansion: () => void;
   onToggleLayerVisibility: (layerId: string) => void;
+  isModal?: boolean;
 }
 
 export const LayerPanel: React.FC<LayerPanelProps> = ({
@@ -16,36 +17,49 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   allExpanded,
   onToggleLayerExpansion,
   onToggleAllExpansion,
-  onToggleLayerVisibility
+  onToggleLayerVisibility,
+  isModal = false
 }) => {
+  const containerStyle = isModal ? {
+    width: '100%',
+    height: 'auto',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: '0',
+    padding: '0',
+    overflow: 'visible',
+    boxShadow: 'none'
+  } : {
+    width: '300px',
+    height: 'calc(100vh - 200px)',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e9ecef',
+    borderRadius: '8px',
+    padding: '1rem',
+    overflow: 'auto',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  };
+
   return (
-    <div style={{
-      width: '300px',
-      height: 'calc(100vh - 200px)',
-      backgroundColor: '#ffffff',
-      border: '1px solid #e9ecef',
-      borderRadius: '8px',
-      padding: '1rem',
-      overflow: 'auto',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: '0 0 1rem 0',
-        borderBottom: '2px solid #e9ecef',
-        paddingBottom: '0.5rem'
-      }}>
-        <h3 style={{
-          margin: '0',
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: '#2c3e50'
+    <div style={containerStyle}>
+      {!isModal && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          margin: '0 0 1rem 0',
+          borderBottom: '2px solid #e9ecef',
+          paddingBottom: '0.5rem'
         }}>
-          レイヤー一覧 ({layers.length})
-        </h3>
-        <button
+          <h3 style={{
+            margin: '0',
+            fontSize: '1.1rem',
+            fontWeight: '600',
+            color: '#2c3e50'
+          }}>
+            レイヤー一覧 ({layers.length})
+          </h3>
+          <button
           onClick={onToggleAllExpansion}
           style={{
             padding: '0.25rem 0.5rem',
@@ -63,10 +77,36 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = '#6c757d';
           }}
-        >
-          {allExpanded ? '全て折りたたみ' : '全て展開'}
-        </button>
-      </div>
+          >
+            {allExpanded ? '全て折りたたみ' : '全て展開'}
+          </button>
+        </div>
+      )}
+
+      {/* モーダル用の全て展開/折りたたみボタン */}
+      {isModal && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: '1rem'
+        }}>
+          <button
+            onClick={onToggleAllExpansion}
+            style={{
+              padding: '0.5rem 1rem',
+              fontSize: '0.9rem',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+          >
+            {allExpanded ? '全て折りたたみ' : '全て展開'}
+          </button>
+        </div>
+      )}
 
       {layers.length === 0 ? (
         <p style={{

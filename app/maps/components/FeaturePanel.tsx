@@ -3,58 +3,76 @@ import React from 'react';
 interface FeaturePanelProps {
   features: any[];
   onClose: () => void;
+  isModal?: boolean;
 }
 
-export const FeaturePanel: React.FC<FeaturePanelProps> = ({ features, onClose }) => {
+export const FeaturePanel: React.FC<FeaturePanelProps> = ({
+  features,
+  onClose,
+  isModal = false
+}) => {
+  const containerStyle = isModal ? {
+    width: '100%',
+    height: 'auto',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: '0',
+    padding: '0',
+    overflow: 'visible',
+    boxShadow: 'none'
+  } : {
+    width: '350px',
+    height: 'calc(100vh - 200px)',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e9ecef',
+    borderRadius: '8px',
+    padding: '1rem',
+    overflow: 'auto',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  };
+
   return (
-    <div style={{
-      width: '350px',
-      height: 'calc(100vh - 200px)',
-      backgroundColor: '#ffffff',
-      border: '1px solid #e9ecef',
-      borderRadius: '8px',
-      padding: '1rem',
-      overflow: 'auto',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: '0 0 1rem 0',
-        borderBottom: '2px solid #e9ecef',
-        paddingBottom: '0.5rem'
-      }}>
-        <h3 style={{
-          margin: '0',
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: '#2c3e50'
+    <div style={containerStyle}>
+      {!isModal && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          margin: '0 0 1rem 0',
+          borderBottom: '2px solid #e9ecef',
+          paddingBottom: '0.5rem'
         }}>
-          フィーチャー情報 ({features.length})
-        </h3>
-        <button
-          onClick={onClose}
-          style={{
-            padding: '0.25rem 0.5rem',
-            fontSize: '0.75rem',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '500'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = '#c82333';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = '#dc3545';
-          }}
-        >
-          ✕
-        </button>
-      </div>
+          <h3 style={{
+            margin: '0',
+            fontSize: '1.1rem',
+            fontWeight: '600',
+            color: '#2c3e50'
+          }}>
+            フィーチャー情報 ({features.length})
+          </h3>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '0.25rem 0.5rem',
+              fontSize: '0.75rem',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#c82333';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc3545';
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {features.length === 0 ? (
         <p style={{

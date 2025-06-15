@@ -1,16 +1,23 @@
 "use client";
 
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import maplibregl from 'maplibre-gl';
 import { useMapState } from './hooks/useMapState';
 import { useMapOperations } from './hooks/useMapOperations';
+import { useResponsive } from './hooks/useResponsive';
 import { LayerPanel } from './components/LayerPanel';
 import { FeaturePanel } from './components/FeaturePanel';
+import { Modal } from './components/Modal';
+import { FloatingButtons } from './components/FloatingButtons';
 import { styles } from './config/styles';
 
 function MapsContent() {
   const mapState = useMapState(styles);
+  const { isMobile, isTablet } = useResponsive();
+  const [showLayerModal, setShowLayerModal] = useState(false);
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+
   const {
     selectedStyleIndex,
     layers,
@@ -198,16 +205,22 @@ function MapsContent() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        {/* レイヤーパネル */}
-        <LayerPanel
-          layers={layers}
-          expandedLayers={expandedLayers}
-          allExpanded={allExpanded}
-          onToggleLayerExpansion={(layerId) => toggleLayerExpansion(layerId, expandedLayers)}
-          onToggleAllExpansion={() => toggleAllExpansion(allExpanded, layers)}
-          onToggleLayerVisibility={(layerId) => toggleLayerVisibility(layerId, mapRef.current!)}
-        />
+      <div style={{
+        display: 'flex',
+        gap: isMobile ? '0' : '1rem',
+        position: 'relative'
+      }}>
+        {/* デスクトップ用レイヤーパネル */}
+        {!isMobile && !isTablet && (
+          <LayerPanel
+            layers={layers}
+            expandedLayers={expandedLayers}
+            allExpanded={allExpanded}
+            onToggleLayerExpansion={(layerId) => toggleLayerExpansion(layerId, expandedLayers)}
+            onToggleAllExpansion={() => toggleAllExpansion(allExpanded, layers)}
+            onToggleLayerVisibility={(layerId) => toggleLayerVisibility(layerId, mapRef.current!)}
+          />
+        )}
 
         {/* マップコンテナ */}
         <div
@@ -222,12 +235,59 @@ function MapsContent() {
           }}
         />
 
-        {/* フィーチャー情報パネル（右側） */}
-        {showFeaturePanel && (
+        {/* デスクトップ用フィーチャー情報パネル（右側） */}
+        {!isMobile && !isTablet && showFeaturePanel && (
           <FeaturePanel
             features={clickedFeatures}
             onClose={handleCloseFeaturePanel}
           />
+        )}
+
+        {/* モバイル・タブレット用フローティングボタン */}
+        {(isMobile || isTablet) && (
+          <FloatingButtons
+            onLayersClick={() => setShowLayerModal(true)}
+            onFeaturesClick={showFeaturePanel ? () => setShowFeatureModal(true) : undefined}
+            showFeaturesButton={showFeaturePanel}
+            layersCount={layers.length}
+            featuresCount={clickedFeatures.length}
+          />
+        )}
+
+        {/* モバイル・タブレット用レイヤーモーダル */}
+        {(isMobile || isTablet) && (
+          <Modal
+            isOpen={showLayerModal}
+            onClose={() => setShowLayerModal(false)}
+            title={`レイヤー一覧 (${layers.length})`}
+            isMobile={isMobile}
+          >
+            <LayerPanel
+              layers={layers}
+              expandedLayers={expandedLayers}
+              allExpanded={allExpanded}
+              onToggleLayerExpansion={(layerId) => toggleLayerExpansion(layerId, expandedLayers)}
+              onToggleAllExpansion={() => toggleAllExpansion(allExpanded, layers)}
+              onToggleLayerVisibility={(layerId) => toggleLayerVisibility(layerId, mapRef.current!)}
+              isModal={true}
+            />
+          </Modal>
+        )}
+
+        {/* モバイル・タブレット用フィーチャーモーダル */}
+        {(isMobile || isTablet) && showFeaturePanel && (
+          <Modal
+            isOpen={showFeatureModal}
+            onClose={() => setShowFeatureModal(false)}
+            title={`フィーチャー情報 (${clickedFeatures.length})`}
+            isMobile={isMobile}
+          >
+            <FeaturePanel
+              features={clickedFeatures}
+              onClose={() => setShowFeatureModal(false)}
+              isModal={true}
+            />
+          </Modal>
         )}
       </div>
     </main>
