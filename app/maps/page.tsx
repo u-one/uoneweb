@@ -130,11 +130,34 @@ export default function MapsPage() {
   }, [selectedStyleIndex]);
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Mapsページ</h1>
-      <label>
+    <main style={{
+      padding: '2rem',
+      backgroundColor: '#f8f9fa',
+      minHeight: '100vh',
+      color: '#333333'
+    }}>
+      <h1 style={{ color: '#2c3e50', marginBottom: '1.5rem' }}>Mapsページ</h1>
+      <label style={{
+        display: 'block',
+        marginBottom: '1rem',
+        fontSize: '1rem',
+        fontWeight: '500',
+        color: '#495057'
+      }}>
         スタイル選択：
-        <select value={selectedStyleIndex} onChange={e => setSelectedStyleIndex(Number(e.target.value))}>
+        <select
+          value={selectedStyleIndex}
+          onChange={e => setSelectedStyleIndex(Number(e.target.value))}
+          style={{
+            marginLeft: '0.5rem',
+            padding: '0.5rem',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            backgroundColor: '#ffffff',
+            color: '#495057',
+            fontSize: '0.9rem'
+          }}
+        >
           {styles.map((s, index) => (
             <option key={index} value={index}>{s.label}</option>
           ))}
@@ -146,18 +169,31 @@ export default function MapsPage() {
         <div style={{
           width: '300px',
           height: '500px',
-          backgroundColor: '#f8f9fa',
-          border: '1px solid #dee2e6',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e9ecef',
           borderRadius: '8px',
           padding: '1rem',
-          overflow: 'auto'
+          overflow: 'auto',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: 'bold' }}>
+          <h3 style={{
+            margin: '0 0 1rem 0',
+            fontSize: '1.1rem',
+            fontWeight: '600',
+            color: '#2c3e50',
+            borderBottom: '2px solid #e9ecef',
+            paddingBottom: '0.5rem'
+          }}>
             レイヤー一覧 ({layers.length})
           </h3>
 
           {layers.length === 0 ? (
-            <p style={{ color: '#6c757d', fontStyle: 'italic' }}>
+            <p style={{
+              color: '#6c757d',
+              fontStyle: 'italic',
+              textAlign: 'center',
+              padding: '2rem 0'
+            }}>
               レイヤー情報を読み込み中...
             </p>
           ) : (
@@ -166,32 +202,54 @@ export default function MapsPage() {
                 <div
                   key={layer.id}
                   style={{
-                    padding: '0.5rem',
-                    backgroundColor: layer.visible ? '#ffffff' : '#f1f3f4',
-                    border: '1px solid #dee2e6',
-                    borderRadius: '4px',
-                    fontSize: '0.9rem'
+                    padding: '0.75rem',
+                    backgroundColor: layer.visible ? '#f8f9fa' : '#e9ecef',
+                    border: `1px solid ${layer.visible ? '#dee2e6' : '#ced4da'}`,
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontWeight: 'bold', color: layer.visible ? '#000' : '#6c757d' }}>
+                    <div style={{ flex: 1, marginRight: '0.5rem' }}>
+                      <div style={{
+                        fontWeight: '600',
+                        color: layer.visible ? '#2c3e50' : '#6c757d',
+                        marginBottom: '0.25rem'
+                      }}>
                         {layer.id}
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                      <div style={{
+                        fontSize: '0.8rem',
+                        color: '#6c757d',
+                        backgroundColor: '#ffffff',
+                        padding: '0.2rem 0.4rem',
+                        borderRadius: '3px',
+                        border: '1px solid #e9ecef',
+                        display: 'inline-block'
+                      }}>
                         {layer.type} {layer.source && `(${layer.source})`}
                       </div>
                     </div>
                     <button
                       onClick={() => toggleLayerVisibility(layer.id)}
                       style={{
-                        padding: '0.25rem 0.5rem',
+                        padding: '0.4rem 0.8rem',
                         fontSize: '0.8rem',
-                        backgroundColor: layer.visible ? '#28a745' : '#6c757d',
+                        backgroundColor: layer.visible ? '#28a745' : '#dc3545',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        transition: 'background-color 0.2s ease',
+                        minWidth: '60px'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = layer.visible ? '#218838' : '#c82333';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = layer.visible ? '#28a745' : '#dc3545';
                       }}
                     >
                       {layer.visible ? '表示' : '非表示'}
@@ -211,7 +269,8 @@ export default function MapsPage() {
             height: '500px',
             borderRadius: '8px',
             overflow: 'hidden',
-            boxShadow: '0 2px 8px #0002'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: '1px solid #e9ecef'
           }}
         />
       </div>
