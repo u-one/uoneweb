@@ -49,6 +49,7 @@ type LayerInfo = {
   type: string;
   source?: string;
   visible: boolean;
+  title?: string;
 };
 
 export default function MapsPage() {
@@ -84,6 +85,8 @@ export default function MapsPage() {
     center: initialValues.center,
     zoom: initialValues.zoom
   });
+  const [expandedLayers, setExpandedLayers] = useState<Set<string>>(new Set());
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // レイヤー情報を更新する関数
   const updateLayers = (map: maplibregl.Map) => {
@@ -94,7 +97,8 @@ export default function MapsPage() {
           id: layer.id,
           type: layer.type,
           source: (layer as any).source || undefined,
-          visible: map.getLayoutProperty(layer.id, 'visibility') !== 'none'
+          visible: map.getLayoutProperty(layer.id, 'visibility') !== 'none',
+          title: (layer as any).metadata?.title || undefined
         }));
         setLayers(layerInfos);
       }
@@ -138,6 +142,30 @@ export default function MapsPage() {
 
     mapRef.current.setLayoutProperty(layerId, 'visibility', newVisibility);
     updateLayers(mapRef.current);
+  };
+
+  // レイヤーの展開/折りたたみを切り替える関数
+  const toggleLayerExpansion = (layerId: string) => {
+    setExpandedLayers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(layerId)) {
+        newSet.delete(layerId);
+      } else {
+        newSet.add(layerId);
+      }
+      return newSet;
+    });
+  };
+
+  // 全て展開/折りたたみ
+  const toggleAllExpansion = () => {
+    if (allExpanded) {
+      setExpandedLayers(new Set());
+      setAllExpanded(false);
+    } else {
+      setExpandedLayers(new Set(layers.map(layer => layer.id)));
+      setAllExpanded(true);
+    }
   };
 
   // スタイル変更時にURLを更新
@@ -282,16 +310,44 @@ export default function MapsPage() {
           overflow: 'auto',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <h3 style={{
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             margin: '0 0 1rem 0',
-            fontSize: '1.1rem',
-            fontWeight: '600',
-            color: '#2c3e50',
             borderBottom: '2px solid #e9ecef',
             paddingBottom: '0.5rem'
           }}>
-            レイヤー一覧 ({layers.length})
-          </h3>
+            <h3 style={{
+              margin: '0',
+              fontSize: '1.1rem',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}>
+              レイヤー一覧 ({layers.length})
+            </h3>
+            <button
+              onClick={toggleAllExpansion}
+              style={{
+                padding: '0.25rem 0.5rem',
+                fontSize: '0.75rem',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#5a6268';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#6c757d';
+              }}
+            >
+              {allExpanded ? '全て折りたたみ' : '全て展開'}
+            </button>
+          </div>
 
           {layers.length === 0 ? (
             <p style={{
@@ -304,65 +360,112 @@ export default function MapsPage() {
             </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {layers.map((layer) => (
-                <div
-                  key={layer.id}
-                  style={{
-                    padding: '0.75rem',
-                    backgroundColor: layer.visible ? '#f8f9fa' : '#e9ecef',
-                    border: `1px solid ${layer.visible ? '#dee2e6' : '#ced4da'}`,
-                    borderRadius: '6px',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ flex: 1, marginRight: '0.5rem' }}>
-                      <div style={{
-                        fontWeight: '600',
-                        color: layer.visible ? '#2c3e50' : '#6c757d',
-                        marginBottom: '0.25rem'
-                      }}>
-                        {layer.id}
-                      </div>
-                      <div style={{
-                        fontSize: '0.8rem',
-                        color: '#6c757d',
-                        backgroundColor: '#ffffff',
-                        padding: '0.2rem 0.4rem',
-                        borderRadius: '3px',
-                        border: '1px solid #e9ecef',
-                        display: 'inline-block'
-                      }}>
-                        {layer.type} {layer.source && `(${layer.source})`}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => toggleLayerVisibility(layer.id)}
+              {layers.map((layer) => {
+                const isExpanded = expandedLayers.has(layer.id);
+                return (
+                  <div
+                    key={layer.id}
+                    style={{
+                      backgroundColor: layer.visible ? '#f8f9fa' : '#e9ecef',
+                      border: `1px solid ${layer.visible ? '#dee2e6' : '#ced4da'}`,
+                      borderRadius: '6px',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {/* ヘッダー部分（常に表示） */}
+                    <div
                       style={{
-                        padding: '0.4rem 0.8rem',
-                        fontSize: '0.8rem',
-                        backgroundColor: layer.visible ? '#28a745' : '#dc3545',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
+                        padding: '0.5rem 0.75rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         cursor: 'pointer',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s ease',
-                        minWidth: '60px'
+                        borderBottom: isExpanded ? '1px solid #dee2e6' : 'none'
                       }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = layer.visible ? '#218838' : '#c82333';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = layer.visible ? '#28a745' : '#dc3545';
-                      }}
+                      onClick={() => toggleLayerExpansion(layer.id)}
                     >
-                      {layer.visible ? '表示' : '非表示'}
-                    </button>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {/* 展開/折りたたみアイコン */}
+                        <span style={{
+                          fontSize: '0.8rem',
+                          color: '#6c757d',
+                          transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease'
+                        }}>
+                          ▶
+                        </span>
+
+                        {/* タイトルまたはID */}
+                        <div style={{
+                          fontWeight: '600',
+                          color: layer.visible ? '#2c3e50' : '#6c757d',
+                          fontSize: '0.85rem'
+                        }}>
+                          {layer.title || layer.id}
+                        </div>
+                      </div>
+
+                      {/* 表示/非表示ボタン */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLayerVisibility(layer.id);
+                        }}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.7rem',
+                          backgroundColor: layer.visible ? '#28a745' : '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '3px',
+                          cursor: 'pointer',
+                          fontWeight: '500',
+                          minWidth: '50px'
+                        }}
+                      >
+                        {layer.visible ? '表示' : '非表示'}
+                      </button>
+                    </div>
+
+                    {/* 詳細部分（展開時のみ表示） */}
+                    {isExpanded && (
+                      <div style={{ padding: '0.75rem' }}>
+                        {/* レイヤーID（タイトルがある場合のみ表示） */}
+                        {layer.title && (
+                          <div style={{
+                            fontWeight: '400',
+                            color: '#6c757d',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.75rem',
+                            fontFamily: 'monospace'
+                          }}>
+                            ID: {layer.id}
+                          </div>
+                        )}
+
+                        {/* タイプとソース */}
+                        <div style={{
+                          fontSize: '0.8rem',
+                          color: '#6c757d',
+                          backgroundColor: '#ffffff',
+                          padding: '0.4rem 0.6rem',
+                          borderRadius: '4px',
+                          border: '1px solid #e9ecef'
+                        }}>
+                          <div><strong>タイプ:</strong> {layer.type}</div>
+                          {layer.source && (
+                            <div style={{ marginTop: '0.25rem' }}>
+                              <strong>ソース:</strong> {layer.source}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
