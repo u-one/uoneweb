@@ -3,6 +3,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // ラスタタイル用のスタイル定義
 const createRasterStyle = (tileUrl: string, attribution: string = '') => ({
@@ -49,11 +50,35 @@ type LayerInfo = {
 export default function MapsPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const [selectedStyleIndex, setSelectedStyleIndex] = useState(0);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // URLパラメータから初期値を取得
+  const getInitialValues = () => {
+    const styleId = searchParams.get('style');
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const zoom = searchParams.get('zoom');
+
+    // スタイルIDからインデックスを取得
+    const styleIndex = styleId ? styles.findIndex(s => s.id === styleId) : -1;
+
+    return {
+      styleIndex: styleIndex >= 0 ? styleIndex : 0,
+      center: {
+        lat: lat ? parseFloat(lat) : 35.6812,
+        lng: lng ? parseFloat(lng) : 139.7671
+      },
+      zoom: zoom ? parseFloat(zoom) : 10
+    };
+  };
+
+  const initialValues = getInitialValues();
+  const [selectedStyleIndex, setSelectedStyleIndex] = useState(initialValues.styleIndex);
   const [layers, setLayers] = useState<LayerInfo[]>([]);
   const [mapInfo, setMapInfo] = useState({
-    center: { lat: 35.6812, lng: 139.7671 },
-    zoom: 10
+    center: initialValues.center,
+    zoom: initialValues.zoom
   });
 
   // レイヤー情報を更新する関数
@@ -74,14 +99,30 @@ export default function MapsPage() {
     }
   };
 
+  // URLを更新する関数
+  const updateURL = (styleIndex: number, center: { lat: number; lng: number }, zoom: number) => {
+    const params = new URLSearchParams();
+    params.set('style', styles[styleIndex].id);
+    params.set('lat', center.lat.toFixed(6));
+    params.set('lng', center.lng.toFixed(6));
+    params.set('zoom', zoom.toFixed(2));
+
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+    router.replace(newURL);
+  };
+
   // 地図情報を更新する関数
   const updateMapInfo = (map: maplibregl.Map) => {
     const center = map.getCenter();
     const zoom = map.getZoom();
-    setMapInfo({
+    const newMapInfo = {
       center: { lat: center.lat, lng: center.lng },
       zoom: zoom
-    });
+    };
+    setMapInfo(newMapInfo);
+
+    // URLも更新
+    updateURL(selectedStyleIndex, newMapInfo.center, newMapInfo.zoom);
   };
 
   // レイヤーの表示/非表示を切り替える関数
@@ -93,6 +134,12 @@ export default function MapsPage() {
 
     mapRef.current.setLayoutProperty(layerId, 'visibility', newVisibility);
     updateLayers(mapRef.current);
+  };
+
+  // スタイル変更時にURLを更新
+  const handleStyleChange = (newStyleIndex: number) => {
+    setSelectedStyleIndex(newStyleIndex);
+    updateURL(newStyleIndex, mapInfo.center, mapInfo.zoom);
   };
 
   useEffect(() => {
@@ -112,8 +159,8 @@ export default function MapsPage() {
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: styleToUse,
-      center: [139.7671, 35.6812],
-      zoom: 10,
+      center: [mapInfo.center.lng, mapInfo.center.lat],
+      zoom: mapInfo.zoom,
     });
 
     map.on('load', () => {
@@ -170,7 +217,7 @@ export default function MapsPage() {
         スタイル選択：
         <select
           value={selectedStyleIndex}
-          onChange={e => setSelectedStyleIndex(Number(e.target.value))}
+          onChange={e => handleStyleChange(Number(e.target.value))}
           style={{
             marginLeft: '0.5rem',
             padding: '0.5rem',
