@@ -121,12 +121,58 @@ export const useMapOperations = (
     }
   };
 
+  // 現在位置を取得して地図の中心に設定
+  const getCurrentLocation = (map: maplibregl.Map) => {
+    if (!navigator.geolocation) {
+      alert('お使いのブラウザは位置情報をサポートしていません。');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log('現在位置を取得:', { latitude, longitude });
+
+        // 地図の中心を現在位置に移動
+        map.flyTo({
+          center: [longitude, latitude],
+          zoom: 15, // ズームレベルを15に設定（詳細表示）
+          duration: 2000 // 2秒かけてアニメーション
+        });
+      },
+      (error) => {
+        console.error('位置情報の取得に失敗:', error);
+        let message = '位置情報の取得に失敗しました。';
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = '位置情報の使用が拒否されました。ブラウザの設定を確認してください。';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = '位置情報が利用できません。';
+            break;
+          case error.TIMEOUT:
+            message = '位置情報の取得がタイムアウトしました。';
+            break;
+        }
+
+        alert(message);
+      },
+      {
+        enableHighAccuracy: true, // 高精度モード
+        timeout: 10000, // 10秒でタイムアウト
+        maximumAge: 300000 // 5分間はキャッシュを使用
+      }
+    );
+  };
+
   return {
     updateLayers,
     updateMapInfo,
     toggleLayerVisibility,
     toggleLayerExpansion,
     toggleAllExpansion,
-    handleMapClick
+    handleMapClick,
+    getCurrentLocation
   };
 };

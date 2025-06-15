@@ -57,7 +57,8 @@ function MapsContent() {
     toggleLayerVisibility,
     toggleLayerExpansion,
     toggleAllExpansion,
-    handleMapClick
+    handleMapClick,
+    getCurrentLocation
   } = mapOperations;
 
   useEffect(() => {
@@ -248,6 +249,7 @@ function MapsContent() {
           <FloatingButtons
             onLayersClick={() => setShowLayerModal(true)}
             onFeaturesClick={showFeaturePanel ? () => setShowFeatureModal(true) : undefined}
+            onLocationClick={() => getCurrentLocation(mapRef.current!)}
             showFeaturesButton={showFeaturePanel}
             layersCount={layers.length}
             featuresCount={clickedFeatures.length}
