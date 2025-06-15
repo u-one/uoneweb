@@ -34,10 +34,14 @@ type StyleOption = {
 
 const styles: StyleOption[] = [
   { id: 'maplibre-demo', label: 'MapLibre デモ', url: 'https://demotiles.maplibre.org/style.json' },
-  { id: 'osm-bright-ja', label: 'OpenStreetMap', url: 'https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json' },
+  { id: 'osm-bright-ja', label: 'osm-bright-ja', url: 'https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json' },
   { id: 'osm-raster', label: 'OSM ラスタタイル', style: createRasterStyle('https://tile.openstreetmap.jp/{z}/{x}/{y}.png', '© OpenStreetMap contributors') },
-  { id: 'positron', label: 'Positron (Light)', url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
-  { id: 'dark-matter', label: 'Dark Matter', url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' },
+  { id: 'rekichizu', label: 'れきちず', url: 'https://mierune.github.io/rekichizu-style/styles/street/style.json' },
+  { id: 'gsi-standard', label: '地理院:標準地図', url: './gsi_standard_style.json' },
+  { id: 'gsi-light', label: '地理院:軽い標準地図', url: './gsi_light_style.json' },
+  { id: 'gsi-kana', label: '地理院:ひらがな地図', url: './gsi_kana_style.json' },
+  { id: '', label: '', url: '' }
+
 ];
 
 type LayerInfo = {
