@@ -53,6 +53,10 @@ export default function MapsPage() {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [selectedStyleIndex, setSelectedStyleIndex] = useState(0);
   const [layers, setLayers] = useState<LayerInfo[]>([]);
+  const [mapInfo, setMapInfo] = useState({
+    center: { lat: 35.6812, lng: 139.7671 },
+    zoom: 10
+  });
 
   // レイヤー情報を更新する関数
   const updateLayers = (map: maplibregl.Map) => {
@@ -72,6 +76,16 @@ export default function MapsPage() {
     }
   };
 
+  // 地図情報を更新する関数
+  const updateMapInfo = (map: maplibregl.Map) => {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    setMapInfo({
+      center: { lat: center.lat, lng: center.lng },
+      zoom: zoom
+    });
+  };
+
   // レイヤーの表示/非表示を切り替える関数
   const toggleLayerVisibility = (layerId: string) => {
     if (!mapRef.current) return;
@@ -86,7 +100,7 @@ export default function MapsPage() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    const selectedStyle = styles[selectedStyleIndex];
+    const selectedStyle = styles[selectedStyleIndex]
     const styleToUse = selectedStyle.url || selectedStyle.style;
 
     // マップが既に存在する場合は削除して再作成
@@ -107,11 +121,22 @@ export default function MapsPage() {
     map.on('load', () => {
       console.log('マップ読み込み完了:', selectedStyle.label);
       updateLayers(map);
+      updateMapInfo(map);
     });
 
     map.on('style.load', () => {
       console.log('スタイル読み込み完了:', selectedStyle.label);
       updateLayers(map);
+      updateMapInfo(map);
+    });
+
+    // 地図の移動やズーム時に情報を更新
+    map.on('moveend', () => {
+      updateMapInfo(map);
+    });
+
+    map.on('zoomend', () => {
+      updateMapInfo(map);
     });
 
     map.on('error', (e) => {
@@ -164,7 +189,39 @@ export default function MapsPage() {
         </select>
       </label>
 
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+      {/* 地図情報表示 */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #e9ecef',
+        borderRadius: '6px',
+        padding: '0.75rem',
+        marginBottom: '1rem',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        display: 'flex',
+        gap: '2rem',
+        fontSize: '0.9rem'
+      }}>
+        <div>
+          <span style={{ fontWeight: '600', color: '#495057' }}>緯度: </span>
+          <span style={{ color: '#2c3e50', fontFamily: 'monospace' }}>
+            {mapInfo.center.lat.toFixed(6)}
+          </span>
+        </div>
+        <div>
+          <span style={{ fontWeight: '600', color: '#495057' }}>経度: </span>
+          <span style={{ color: '#2c3e50', fontFamily: 'monospace' }}>
+            {mapInfo.center.lng.toFixed(6)}
+          </span>
+        </div>
+        <div>
+          <span style={{ fontWeight: '600', color: '#495057' }}>ズーム: </span>
+          <span style={{ color: '#2c3e50', fontFamily: 'monospace' }}>
+            {mapInfo.zoom.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem' }}>
         {/* レイヤーパネル */}
         <div style={{
           width: '300px',
