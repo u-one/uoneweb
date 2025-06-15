@@ -5,32 +5,56 @@ import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 
 const styles = [
-  { label: 'デフォルト', url: 'https://demotiles.maplibre.org/style.json' },
-  { label: 'OSM Bright', url: 'https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json' },
-  { label: 'Stamen Toner', url: 'https://maps.tilehostiｋg.com/styles/toner/style.json?key=YOUR_API_KEY' },
-  // 必要に応じて他のスタイルも追加可能
+  { label: 'MapLibre デモ', url: 'https://demotiles.maplibre.org/style.json' },
+  { label: 'OpenStreetMap', url: 'https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json' },
+  { label: 'Positron (Light)', url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
+  { label: 'Dark Matter', url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' },
 ];
 
 export default function MapsPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const [styleUrl, setStyleUrl] = useState(styles[1].url);
+  const [styleUrl, setStyleUrl] = useState(styles[0].url);
 
   useEffect(() => {
     if (!mapContainer.current) return;
+
+    // マップが既に存在する場合は削除して再作成
     if (mapRef.current) {
-      mapRef.current.setStyle(styleUrl);
-      return;
+      console.log('既存のマップを削除してスタイルを切り替え:', styleUrl);
+      mapRef.current.remove();
+      mapRef.current = null;
     }
+
+    console.log('マップを初期化中:', styleUrl);
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: styleUrl,
       center: [139.7671, 35.6812],
       zoom: 10,
     });
+
+    map.on('load', () => {
+      console.log('マップ読み込み完了:', styleUrl);
+    });
+
+    map.on('style.load', () => {
+      console.log('スタイル読み込み完了:', styleUrl);
+    });
+
+    map.on('error', (e) => {
+      console.error('マップエラー:', e.error);
+    });
+
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapRef.current = map;
-    return () => map.remove();
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, [styleUrl]);
 
   return (
