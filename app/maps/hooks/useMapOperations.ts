@@ -9,7 +9,7 @@ export const useMapOperations = (
   clickMarkerRef: React.MutableRefObject<maplibregl.Marker | null>,
   updateURL: (styleIndex: number, center: { lat: number; lng: number }, zoom: number) => void,
   selectedStyleIndex: number,
-  setExpandedLayers: (layers: Set<string>) => void,
+  setExpandedLayers: React.Dispatch<React.SetStateAction<Set<string>>>,
   setAllExpanded: (expanded: boolean) => void
 ) => {
   // レイヤー情報を更新する関数
@@ -58,7 +58,7 @@ export const useMapOperations = (
 
   // レイヤーの展開/折りたたみを切り替える関数
   const toggleLayerExpansion = (layerId: string, expandedLayers: Set<string>) => {
-    setExpandedLayers(prev => {
+    setExpandedLayers((prev: Set<string>) => {
       const newSet = new Set(prev);
       if (newSet.has(layerId)) {
         newSet.delete(layerId);
