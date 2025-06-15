@@ -168,7 +168,7 @@ export default function MapsPage() {
         {/* レイヤーパネル */}
         <div style={{
           width: '300px',
-          height: '500px',
+          height: 'calc(100vh - 200px)',
           backgroundColor: '#ffffff',
           border: '1px solid #e9ecef',
           borderRadius: '8px',
@@ -266,7 +266,7 @@ export default function MapsPage() {
           ref={mapContainer}
           style={{
             flex: 1,
-            height: '500px',
+            height: 'calc(100vh - 200px)',
             borderRadius: '8px',
             overflow: 'hidden',
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
